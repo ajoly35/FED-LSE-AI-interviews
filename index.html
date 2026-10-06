@@ -56,7 +56,7 @@
 <body>
 
   <div class="card">
-    <h1>Academic Research Interview</h1>
+    <h1>Academic Research Interview | FED & LSE Study</h1>
     <p>
       Thank you for completing the initial survey questions. Please click the button below to begin your brief voice-based research interview regarding business demographics and technology adoption for the joint FED and LSE study.
     </p>
@@ -74,14 +74,14 @@
   <script>
     // 1. Read survey variables from URL query parameters
     const urlParams = new URLSearchParams(window.location.search);
-    const responseId = urlParams.get('response_id') || 'UNKNOWN';
+    const responseId = urlParams.get('response_id') || '';
     const businessAge = urlParams.get('business_age') || 'Not specified';
     const employeeCount = urlParams.get('employee_count') || 'Not specified';
     const clientBase = urlParams.get('client_base') || 'Not specified';
     const aiToolsUsed = urlParams.get('ai_tools_used') || 'Not specified';
 
-    // 2. Set your destination return URL for Qualtrics Part 2
-    const qualtricsReturnUrl = "https://your-qualtrics-completion-survey-url";
+    // 2. Base Qualtrics Survey URL (Update this with your actual Qualtrics link)
+    const qualtricsBaseUrl = "https://your-institution.qualtrics.com/jfe/form/SV_YOUR_SURVEY_ID";
 
     // 3. Pass dynamic variables to the widget and register redirect handler
     window.addEventListener('load', () => {
@@ -99,8 +99,14 @@
         // Listen for the custom client tool event to redirect upon completion
         widget.addEventListener('elevenlabs-convai:call', (event) => {
           if (event.detail && event.detail.name === 'end_interview') {
-            console.log('Interview completed. Redirecting to Qualtrics...');
-            window.location.href = qualtricsReturnUrl + (qualtricsReturnUrl.includes('?') ? '&' : '?') + 'response_id=' + encodeURIComponent(responseId);
+            console.log('Interview completed. Resuming Qualtrics response...');
+            
+            // Constructs the retake URL that reopens the exact same response
+            const returnUrl = responseId 
+              ? `${qualtricsBaseUrl}?Q_R=${encodeURIComponent(responseId)}&Q_R_DEL=0&interview_completed=true`
+              : `${qualtricsBaseUrl}?interview_completed=true`;
+
+            window.location.href = returnUrl;
           }
         });
       }
