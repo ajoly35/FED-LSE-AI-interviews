@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FED/LSE Research Interview</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: #f7f9fa;
+      color: #333;
+    }
+    .card {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      text-align: center;
+      max-width: 480px;
+    }
+    button {
+      background: #0056b3;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    button:hover { background: #004494; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>FED / LSE Study Interview</h2>
+    <p>Thank you for completing the survey. Please click below to begin your short voice interview with Dr. Evelyn Reed.</p>
+    <button id="start-btn">Start Voice Interview</button>
+    <p id="status" style="margin-top: 1rem; color: #666;"></p>
+  </div>
+
+  <script type="module">
+    import { Conversation } from 'https://cdn.jsdelivr.net/npm/@11labs/client/+esm';
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const responseId = urlParams.get('response_id') || urlParams.get('ResponseID') || '';
+    const businessAge = urlParams.get('business_age') || 'Not specified';
+    const employeeCount = urlParams.get('employee_count') || 'Not specified';
+    const clientBase = urlParams.get('client_base') || 'Not specified';
+    const aiToolsUsed = urlParams.get('ai_tools_used') || 'Not specified';
+
+    const qualtricsReturnUrl = 'https://YOUR_QUALTRICS_SUBDOMAIN.qualtrics.com/jfe/form/YOUR_COMPLETION_SURVEY_ID?response_id=' + encodeURIComponent(responseId);
+
+    const startBtn = document.getElementById('start-btn');
+    const statusText = document.getElementById('status');
+
+    startBtn.addEventListener('click', async () => {
+      try {
+        statusText.innerText = 'Connecting to interviewer...';
+        startBtn.disabled = true;
+
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        const conversation = await Conversation.startSession({
+          agentId: 'agent_0201m48f2094fw08nar21wz9d2ra',
+          dynamicVariables: {
+            business_age: businessAge,
+            employee_count: employeeCount,
+            client_base: clientBase,
+            ai_tools_used: aiToolsUsed
+          },
+          clientTools: {
+            end_interview: async () => {
+              statusText.innerText = 'Interview completed. Redirecting to Qualtrics...';
+              setTimeout(() => {
+                window.location.href = qualtricsReturnUrl;
+              }, 1500);
+            }
+          },
+          onConnect: () => {
+            statusText.innerText = 'Connected. Interview in progress...';
+          },
+          onDisconnect: () => {
+            statusText.innerText = 'Call ended.';
+          },
+          onError: (error) => {
+            console.error('Conversation error:', error);
+            statusText.innerText = 'An error occurred. Please refresh.';
+            startBtn.disabled = false;
+          }
+        });
+      } catch (err) {
+        console.error('Initialization error:', err);
+        statusText.innerText = 'Microphone permission required.';
+        startBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
