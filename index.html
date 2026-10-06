@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FED/LSE Research Interview</title>
+  <title>FED/LSE Academic Research Interview</title>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -14,91 +14,76 @@
       min-height: 100vh;
       margin: 0;
       background: #f7f9fa;
-      color: #333;
-    }
-    .card {
-      background: white;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      color: #1a202c;
       text-align: center;
-      max-width: 480px;
+      padding: 20px;
     }
-    button {
-      background: #0056b3;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      font-size: 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-top: 1rem;
+    .container {
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      max-width: 500px;
+      width: 100%;
     }
-    button:hover { background: #004494; }
+    h1 {
+      font-size: 22px;
+      margin-bottom: 12px;
+      color: #2d3748;
+    }
+    p {
+      font-size: 15px;
+      line-height: 1.6;
+      color: #4a5568;
+      margin-bottom: 24px;
+    }
+    .status {
+      font-size: 14px;
+      color: #718096;
+      margin-top: 16px;
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h2>FED / LSE Study Interview</h2>
-    <p>Thank you for completing the survey. Please click below to begin your short voice interview with Dr. Evelyn Reed.</p>
-    <button id="start-btn">Start Voice Interview</button>
-    <p id="status" style="margin-top: 1rem; color: #666;"></p>
+  <div class="container">
+    <h1>FED / LSE Research Study</h1>
+    <p>Please click below to start your brief follow-up voice interview. When finished, you will be automatically returned to complete the study.</p>
+    
+    <elevenlabs-convai agent-id="agent_0201m48f2094fw08nar21wz9d2ra"></elevenlabs-convai>
+    
+    <div class="status" id="status-text">Ready to connect...</div>
   </div>
 
-  <script type="module">
-    import { Conversation } from 'https://cdn.jsdelivr.net/npm/@11labs/client/+esm';
+  <script src="https://elevenlabs.io/convai-widget/index.js" async type="text/javascript"></script>
+
+  <script>
+    const qualtricsReturnUrl = "https://your-qualtrics-survey-url";
 
     const urlParams = new URLSearchParams(window.location.search);
-    const responseId = urlParams.get('response_id') || urlParams.get('ResponseID') || '';
-    const businessAge = urlParams.get('business_age') || 'Not specified';
-    const employeeCount = urlParams.get('employee_count') || 'Not specified';
-    const clientBase = urlParams.get('client_base') || 'Not specified';
-    const aiToolsUsed = urlParams.get('ai_tools_used') || 'Not specified';
+    const responseId = urlParams.get("response_id") || "";
+    const businessAge = urlParams.get("business_age") || "";
+    const employeeCount = urlParams.get("employee_count") || "";
+    const clientBase = urlParams.get("client_base") || "";
+    const aiToolsUsed = urlParams.get("ai_tools_used") || "";
 
-    const qualtricsReturnUrl = 'https://YOUR_QUALTRICS_SUBDOMAIN.qualtrics.com/jfe/form/YOUR_COMPLETION_SURVEY_ID?response_id=' + encodeURIComponent(responseId);
+    const widget = document.querySelector("elevenlabs-convai");
 
-    const startBtn = document.getElementById('start-btn');
-    const statusText = document.getElementById('status');
+    widget.setAttribute("dynamic-variables", JSON.stringify({
+      business_age: businessAge,
+      employee_count: employeeCount,
+      client_base: clientBase,
+      ai_tools_used: aiToolsUsed
+    }));
 
-    startBtn.addEventListener('click', async () => {
-      try {
-        statusText.innerText = 'Connecting to interviewer...';
-        startBtn.disabled = true;
-
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-
-        const conversation = await Conversation.startSession({
-          agentId: 'agent_0201m48f2094fw08nar21wz9d2ra',
-          dynamicVariables: {
-            business_age: businessAge,
-            employee_count: employeeCount,
-            client_base: clientBase,
-            ai_tools_used: aiToolsUsed
-          },
-          clientTools: {
-            end_interview: async () => {
-              statusText.innerText = 'Interview completed. Redirecting to Qualtrics...';
-              setTimeout(() => {
-                window.location.href = qualtricsReturnUrl;
-              }, 1500);
-            }
-          },
-          onConnect: () => {
-            statusText.innerText = 'Connected. Interview in progress...';
-          },
-          onDisconnect: () => {
-            statusText.innerText = 'Call ended.';
-          },
-          onError: (error) => {
-            console.error('Conversation error:', error);
-            statusText.innerText = 'An error occurred. Please refresh.';
-            startBtn.disabled = false;
-          }
-        });
-      } catch (err) {
-        console.error('Initialization error:', err);
-        statusText.innerText = 'Microphone permission required.';
-        startBtn.disabled = false;
+    widget.addEventListener("elevenlabs-convai:call-tool", (event) => {
+      if (event.detail && event.detail.name === "end_interview") {
+        document.getElementById("status-text").innerText = "Interview complete. Returning to Qualtrics...";
+        const destination = responseId
+          ? `${qualtricsReturnUrl}?response_id=${encodeURIComponent(responseId)}`
+          : qualtricsReturnUrl;
+        setTimeout(() => {
+          window.location.href = destination;
+        }, 1200);
       }
     });
   </script>
