@@ -78,8 +78,8 @@
     const clientBase = urlParams.get('client_base') || '';
     const aiToolsUsed = urlParams.get('ai_tools_used') || '';
 
-    // Replace with your base Qualtrics survey link
-    const qualtricsBaseUrl = "https://your-institution.qualtrics.com/jfe/form/SV_YOUR_SURVEY_ID";
+    // LSE Qualtrics base survey return link
+    const qualtricsBaseUrl = "https://lse.eu.qualtrics.com/jfe/form/SV_8dzLCFfMXtrEDXM";
 
     window.addEventListener('elevenlabs-convai:call', (event) => {
       if (event.detail && event.detail.config) {
@@ -92,10 +92,10 @@
         
         event.detail.config.clientTools = {
           end_interview: async () => {
-            if (responseId && qualtricsBaseUrl.indexOf('YOUR_SURVEY_ID') === -1) {
+            if (responseId) {
               window.location.href = `${qualtricsBaseUrl}?Q_R=${encodeURIComponent(responseId)}&Q_R_DEL=0&interview_completed=true`;
             } else {
-              alert('Interview completed! Redirecting back to Qualtrics...');
+              window.location.href = `${qualtricsBaseUrl}?interview_completed=true`;
             }
           }
         };
